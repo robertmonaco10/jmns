@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JM Client Checkout</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #E6DDD6;
+      margin: 0;
+      padding: 24px;
+      color: #4A423D;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #F6F1EC;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(74, 66, 61, 0.10);
+      border: 1px solid #D8CDC6;
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #DDD2CB;
+    }
+
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #F6F1EC;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-subtitle {
+      margin-top: 4px;
+      color: #7A6E66;
+      font-size: 14px;
+    }
+
+    h1, h2, h3, label {
+      color: #4A423D;
+    }
+
+    h3 {
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #CFC3BC;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #FCF9F6;
+      color: #4A423D;
+    }
+
+    .currency-input,
+    .percent-input {
+      text-align: right;
+    }
+
+    .section {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #DDD2CB;
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+    }
+
+    .summary {
+      background: #EEE6DF;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
+      border: 1px solid #DDD2CB;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .summary-row.total-due {
+      font-size: 22px;
+      font-weight: bold;
+      padding-top: 8px;
+      border-top: 1px solid #d1d5db;
+      margin-top: 10px;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #7A6E66;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #665B54;
+    }
+
+    .secondary {
+      background: #DDD2CB;
+      color: #4A423D;
+    }
+
+    .secondary:hover {
+      background: #CFC3BC;
+    }
+
+    .danger {
+      background: #8A5F5A;
+      color: white;
+    }
+
+    .success-btn {
+      background: #7A6E66;
+      color: white;
+    }
+
+    .success-btn:hover {
+      background: #665B54;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: #F6F1EC;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(74, 66, 61, 0.18);
+      border: 1px solid #D8CDC6;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .modal-summary {
+      background: #EEE6DF;
+      border-radius: 12px;
+      padding: 14px;
+      margin: 14px 0;
+      border: 1px solid #DDD2CB;
+    }
+
+    .modal-summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 6px 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .error-text {
+      color: #991b1b;
+      white-space: pre-wrap;
+    }
+
+    .success-text {
+      color: #166534;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 700px) {
+      .grid, .payment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions,
+      .modal-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand-header">
+      <img src="apple-touch-icon.png" alt="JM logo" class="brand-logo">
+      <div class="brand-text">
+        <h1>JM Client Checkout</h1>
+        <div class="brand-subtitle">Client checkout and payment entry</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="full">
+        <label for="patientName">Patient Name</label>
+        <input type="text" id="patientName">
+      </div>
+
+      <div>
+        <label for="city">City</label>
+        <select id="city">
+          <option value="">Select city</option>
+          <option value="San Diego">San Diego</option>
+          <option value="San Jose">San Jose</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="service">Service</label>
+        <select id="service">
+          <option value="">Loading...</option>
+        </select>
+      </div>
+
+      <div id="optionWrap">
+        <label for="option">Option</label>
+        <select id="option">
+          <option value="">No option needed</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="units">Units</label>
+        <input type="number" id="units" min="0" step="1" value="1">
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="grid">
+        <div>
+          <label for="discountType">Discount Type</label>
+          <select id="discountType">
+            <option value="none">None</option>
+            <option value="percent">Percentage</option>
+            <option value="dollar">Dollar Amount</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="discountValueDisplay">Discount Value</label>
+          <input type="text" id="discountValueDisplay" class="currency-input" value="--" disabled>
+          <input type="hidden" id="discountValue" value="0">
+        </div>
+
+        <div>
+          <label for="tipDisplay">Tip</label>
+          <input type="text" id="tipDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="tip" value="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-row"><span>Charge per Unit</span><strong id="sumChargePerUnit">$0.00</strong></div>
+      <div class="summary-row"><span>Gross Charge</span><strong id="sumGross">$0.00</strong></div>
+      <div class="summary-row"><span>Discount</span><strong id="sumDiscount">$0.00</strong></div>
+      <div class="summary-row"><span>Total Charged</span><strong id="sumTotalCharged">$0.00</strong></div>
+      <div class="summary-row"><span>Total Cost</span><strong id="sumTotalCost">$0.00</strong></div>
+      <div class="summary-row"><span>Tip</span><strong id="sumTip">$0.00</strong></div>
+      <div class="summary-row total-due"><span>Total Due</span><strong id="sumFinalTotal">$0.00</strong></div>
+    </div>
+
+    <div class="section">
+      <h3>Payments</h3>
+      <div class="payment-grid">
+        <div>
+          <label for="payCreditCardDisplay">Credit Card</label>
+          <input type="text" id="payCreditCardDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="payCreditCard" value="0">
+        </div>
+
+        <div>
+          <label for="payCashCheckDisplay">Cash/Check</label>
+          <input type="text" id="payCashCheckDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="payCashCheck" value="0">
+        </div>
+
+        <div>
+          <label for="payVenmoDisplay">Venmo</label>
+          <input type="text" id="payVenmoDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="payVenmo" value="0">
+        </div>
+
+        <div>
+          <label for="payZelleDisplay">Zelle</label>
+          <input type="text" id="payZelleDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="payZelle" value="0">
+        </div>
+      </div>
+
+      <div id="creditCardFeeWrap" class="grid hidden" style="margin-top:16px;">
+        <div>
+          <label for="creditCardFeeDisplay">Credit Card Fee</label>
+          <input type="text" id="creditCardFeeDisplay" class="currency-input" value="$0.00">
+          <input type="hidden" id="creditCardFee" value="0">
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row"><span>Payments Entered</span><strong id="sumPayments">$0.00</strong></div>
+        <div class="summary-row"><span>Remaining</span><strong id="sumRemaining">$0.00</strong></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="submitTransaction()">Save Transaction</button>
+      <button class="secondary" onclick="resetForm()">Reset</button>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal">
+      <h2>Verify Transaction</h2>
+      <p>Please confirm that the information below is correct.</p>
+      <div id="confirmSummary" class="modal-summary"></div>
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeConfirmModal()">Go Back</button>
+        <button class="primary" onclick="confirmSave()">Confirm and Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorModal" class="modal-overlay">
+    <div class="modal">
+      <h2>Error</h2>
+      <div id="errorModalText" class="error-text"></div>
+      <div class="modal-actions">
+        <button class="danger" onclick="closeErrorModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal-overlay">
+    <div class="modal">
+      <h2>Transaction Saved</h2>
+      <div id="successModalText" class="success-text"></div>
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeSuccessModal()">Close</button>
+        <button class="success-btn" onclick="newTransactionFromSuccess()">New Transaction</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+    let appData = {
+      services: [],
+      optionsMap: {},
+      priceMap: {}
+    };
+
+    let pendingSubmission = null;
+
+    function formatMoney(value) {
+      return '$' + (Number(value || 0)).toFixed(2);
+    }
+
+    function formatPercent(value) {
+      return Number(value || 0).toFixed(2) + '%';
+    }
+
+    function parseCurrencyInput(value) {
+      if (value === null || value === undefined) return 0;
+      const cleaned = String(value).replace(/[^0-9.]/g, '');
+      const num = Number(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function parsePercentInput(value) {
+      if (value === null || value === undefined) return 0;
+      const cleaned = String(value).replace(/[^0-9.]/g, '');
+      const num = Number(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function formatCurrencyField(displayId, hiddenId) {
+      const display = document.getElementById(displayId);
+      const hidden = document.getElementById(hiddenId);
+      const amount = parseCurrencyInput(display.value);
+      hidden.value = amount;
+      display.value = formatMoney(amount);
+      updateSummary();
+    }
+
+    function prepareCurrencyFieldForEntry(displayId) {
+      const field = document.getElementById(displayId);
+
+      field.addEventListener('focus', function() {
+        if (field.value === '$0.00') {
+          field.value = '';
+        } else {
+          field.select();
+        }
+      });
+
+      field.addEventListener('blur', function() {
+        if (field.value.trim() === '') {
+          field.value = '$0.00';
+        }
+      });
+    }
+
+    function formatDiscountField() {
+      const type = document.getElementById('discountType').value;
+      const display = document.getElementById('discountValueDisplay');
+      const hidden = document.getElementById('discountValue');
+
+      if (type === 'none') {
+        hidden.value = 0;
+        display.value = '--';
+        display.disabled = true;
+        display.classList.remove('currency-input');
+        display.classList.remove('percent-input');
+        updateSummary();
+        return;
+      }
+
+      display.disabled = false;
+
+      if (type === 'percent') {
+        const amount = parsePercentInput(display.value);
+        hidden.value = amount;
+        display.value = formatPercent(amount);
+        display.classList.remove('currency-input');
+        display.classList.add('percent-input');
+      } else {
+        const amount = parseCurrencyInput(display.value);
+        hidden.value = amount;
+        display.value = formatMoney(amount);
+        display.classList.remove('percent-input');
+        display.classList.add('currency-input');
+      }
+
+      updateSummary();
+    }
+
+    function resetDiscountFieldForType() {
+      const type = document.getElementById('discountType').value;
+      const display = document.getElementById('discountValueDisplay');
+      const hidden = document.getElementById('discountValue');
+
+      hidden.value = 0;
+
+      if (type === 'none') {
+        display.value = '--';
+        display.disabled = true;
+        display.classList.remove('currency-input');
+        display.classList.remove('percent-input');
+      } else if (type === 'percent') {
+        display.value = '0.00%';
+        display.disabled = false;
+        display.classList.remove('currency-input');
+        display.classList.add('percent-input');
+      } else {
+        display.value = '$0.00';
+        display.disabled = false;
+        display.classList.remove('percent-input');
+        display.classList.add('currency-input');
+      }
+
+      updateSummary();
+    }
+
+    function helperKey(service, option) {
+      return String(service || '').trim() + '|' + String(option || '').trim();
+    }
+
+    function getSelectedPriceRow() {
+      const service = document.getElementById('service').value;
+      const option = document.getElementById('option').value || '';
+      return appData.priceMap[helperKey(service, option)] || null;
+    }
+
+    async function loadAppData() {
+      try {
+        const res = await fetch(`${API_URL}?action=getAppData`);
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Could not load app data.');
+        }
+
+        appData = data;
+        populateServices();
+      } catch (err) {
+        showError(err);
+      }
+    }
+
+    function populateServices() {
+      const serviceSelect = document.getElementById('service');
+      serviceSelect.innerHTML = '<option value="">Select service</option>';
+
+      appData.services.forEach(function(service) {
+        const opt = document.createElement('option');
+        opt.value = service;
+        opt.textContent = service;
+        serviceSelect.appendChild(opt);
+      });
+
+      populateOptions();
+    }
+
+    function populateOptions() {
+      const service = document.getElementById('service').value;
+      const optionSelect = document.getElementById('option');
+      const optionWrap = document.getElementById('optionWrap');
+
+      optionSelect.innerHTML = '';
+
+      const options = appData.optionsMap[service] || [];
+
+      if (options.length === 0) {
+        optionWrap.classList.add('hidden');
+        optionSelect.innerHTML = '<option value="">No option needed</option>';
+        optionSelect.value = '';
+      } else {
+        optionWrap.classList.remove('hidden');
+        optionSelect.innerHTML = '<option value="">Select option</option>';
+
+        options.forEach(function(option) {
+          const opt = document.createElement('option');
+          opt.value = option;
+          opt.textContent = option;
+          optionSelect.appendChild(opt);
+        });
+      }
+
+      updateSummary();
+    }
+
+    function getDiscountAmount(grossCharge) {
+      const type = document.getElementById('discountType').value;
+      const value = Number(document.getElementById('discountValue').value || 0);
+
+      if (type === 'percent') {
+        return grossCharge * (value / 100);
+      }
+      if (type === 'dollar') {
+        return value;
+      }
+      return 0;
+    }
+
+    function getPaymentTotal() {
+      return (
+        Number(document.getElementById('payCreditCard').value || 0) +
+        Number(document.getElementById('payCashCheck').value || 0) +
+        Number(document.getElementById('payVenmo').value || 0) +
+        Number(document.getElementById('payZelle').value || 0)
+      );
+    }
+
+    function toggleCreditCardFee() {
+      const ccAmount = Number(document.getElementById('payCreditCard').value || 0);
+      const wrap = document.getElementById('creditCardFeeWrap');
+      wrap.classList.toggle('hidden', ccAmount <= 0);
+
+      if (ccAmount <= 0) {
+        document.getElementById('creditCardFee').value = 0;
+        document.getElementById('creditCardFeeDisplay').value = '$0.00';
+      }
+    }
+
+    function getComputedTotals() {
+      const selected = getSelectedPriceRow();
+      const units = Number(document.getElementById('units').value || 0);
+      const tip = Number(document.getElementById('tip').value || 0);
+
+      const chargePerUnit = selected ? Number(selected.chargePerUnit || 0) : 0;
+      const costPerUnit = selected ? Number(selected.costPerUnit || 0) : 0;
+
+      const grossCharge = units * chargePerUnit;
+      let discount = getDiscountAmount(grossCharge);
+      if (discount > grossCharge) discount = grossCharge;
+
+      const totalCharged = grossCharge - discount;
+      const totalCost = units * costPerUnit;
+      const finalTotal = totalCharged + tip;
+      const paymentsEntered = getPaymentTotal();
+      const remaining = finalTotal - paymentsEntered;
+
+      return {
+        chargePerUnit,
+        grossCharge,
+        discount,
+        totalCharged,
+        totalCost,
+        tip,
+        finalTotal,
+        paymentsEntered,
+        remaining
+      };
+    }
+
+    function updateSummary() {
+      const totals = getComputedTotals();
+
+      document.getElementById('sumChargePerUnit').textContent = formatMoney(totals.chargePerUnit);
+      document.getElementById('sumGross').textContent = formatMoney(totals.grossCharge);
+      document.getElementById('sumDiscount').textContent = formatMoney(totals.discount);
+      document.getElementById('sumTotalCharged').textContent = formatMoney(totals.totalCharged);
+      document.getElementById('sumTotalCost').textContent = formatMoney(totals.totalCost);
+      document.getElementById('sumTip').textContent = formatMoney(totals.tip);
+      document.getElementById('sumFinalTotal').textContent = formatMoney(totals.finalTotal);
+      document.getElementById('sumPayments').textContent = formatMoney(totals.paymentsEntered);
+      document.getElementById('sumRemaining').textContent = formatMoney(totals.remaining);
+
+      toggleCreditCardFee();
+    }
+
+    function collectFormData() {
+      return {
+        patientName: document.getElementById('patientName').value.trim(),
+        city: document.getElementById('city').value,
+        service: document.getElementById('service').value,
+        option: document.getElementById('option').value || '',
+        units: Number(document.getElementById('units').value || 0),
+        discountType: document.getElementById('discountType').value,
+        discountValue: Number(document.getElementById('discountValue').value || 0),
+        tip: Number(document.getElementById('tip').value || 0),
+        creditCardFee: Number(document.getElementById('creditCardFee').value || 0),
+        payments: {
+          creditCard: Number(document.getElementById('payCreditCard').value || 0),
+          cashCheck: Number(document.getElementById('payCashCheck').value || 0),
+          venmo: Number(document.getElementById('payVenmo').value || 0),
+          zelle: Number(document.getElementById('payZelle').value || 0)
+        }
+      };
+    }
+
+    function buildPaymentSummaryRows(payments) {
+      const rows = [];
+
+      if (payments.creditCard > 0) {
+        rows.push(`<div class="modal-summary-row"><span>Credit Card</span><strong>${formatMoney(payments.creditCard)}</strong></div>`);
+      }
+      if (payments.cashCheck > 0) {
+        rows.push(`<div class="modal-summary-row"><span>Cash/Check</span><strong>${formatMoney(payments.cashCheck)}</strong></div>`);
+      }
+      if (payments.venmo > 0) {
+        rows.push(`<div class="modal-summary-row"><span>Venmo</span><strong>${formatMoney(payments.venmo)}</strong></div>`);
+      }
+      if (payments.zelle > 0) {
+        rows.push(`<div class="modal-summary-row"><span>Zelle</span><strong>${formatMoney(payments.zelle)}</strong></div>`);
+      }
+
+      return rows.join('');
+    }
+
+    function getDiscountDisplayForConfirm(data) {
+      if (data.discountType === 'percent') {
+        return formatPercent(data.discountValue);
+      }
+      if (data.discountType === 'dollar') {
+        return formatMoney(data.discountValue);
+      }
+      return 'None';
+    }
+
+    function submitTransaction() {
+      clearErrorModal();
+
+      const data = collectFormData();
+      const totals = getComputedTotals();
+      const paymentRows = buildPaymentSummaryRows(data.payments);
+
+      const confirmSummary = document.getElementById('confirmSummary');
+      confirmSummary.innerHTML = `
+        <div class="modal-summary-row"><span>Patient</span><strong>${escapeHtml(data.patientName || '')}</strong></div>
+        <div class="modal-summary-row"><span>City</span><strong>${escapeHtml(data.city || '')}</strong></div>
+        <div class="modal-summary-row"><span>Service</span><strong>${escapeHtml(data.service || '')}</strong></div>
+        <div class="modal-summary-row"><span>Option</span><strong>${escapeHtml(data.option || 'None')}</strong></div>
+        <div class="modal-summary-row"><span>Units</span><strong>${data.units}</strong></div>
+        <div class="modal-summary-row"><span>Discount</span><strong>${getDiscountDisplayForConfirm(data)}</strong></div>
+        <div class="modal-summary-row"><span>Total Charged</span><strong>${formatMoney(totals.totalCharged)}</strong></div>
+        <div class="modal-summary-row"><span>Tip</span><strong>${formatMoney(data.tip)}</strong></div>
+        <div class="modal-summary-row"><span>Total Due</span><strong>${formatMoney(totals.finalTotal)}</strong></div>
+        ${paymentRows}
+        ${data.creditCardFee > 0 ? `<div class="modal-summary-row"><span>Credit Card Fee</span><strong>${formatMoney(data.creditCardFee)}</strong></div>` : ''}
+      `;
+
+      pendingSubmission = data;
+      document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirmModal() {
+      pendingSubmission = null;
+      document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    async function confirmSave() {
+      if (!pendingSubmission) return;
+
+      const savedPatientName = pendingSubmission.patientName || '';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pendingSubmission)
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Could not save transaction.');
+        }
+
+        document.getElementById('confirmModal').style.display = 'none';
+        resetForm();
+        result.patientName = savedPatientName;
+        showSuccess(result);
+        pendingSubmission = null;
+      } catch (err) {
+        document.getElementById('confirmModal').style.display = 'none';
+        pendingSubmission = null;
+        showError(err);
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('patientName').value = '';
+      document.getElementById('city').value = '';
+      document.getElementById('service').value = '';
+      document.getElementById('option').innerHTML = '<option value="">No option needed</option>';
+      document.getElementById('optionWrap').classList.remove('hidden');
+      document.getElementById('units').value = 1;
+      document.getElementById('discountType').value = 'none';
+
+      document.getElementById('discountValue').value = 0;
+      document.getElementById('tip').value = 0;
+      document.getElementById('creditCardFee').value = 0;
+      document.getElementById('payCreditCard').value = 0;
+      document.getElementById('payCashCheck').value = 0;
+      document.getElementById('payVenmo').value = 0;
+      document.getElementById('payZelle').value = 0;
+
+      document.getElementById('tipDisplay').value = '$0.00';
+      document.getElementById('creditCardFeeDisplay').value = '$0.00';
+      document.getElementById('payCreditCardDisplay').value = '$0.00';
+      document.getElementById('payCashCheckDisplay').value = '$0.00';
+      document.getElementById('payVenmoDisplay').value = '$0.00';
+      document.getElementById('payZelleDisplay').value = '$0.00';
+
+      resetDiscountFieldForType();
+
+      document.getElementById('creditCardFeeWrap').classList.add('hidden');
+      document.getElementById('confirmModal').style.display = 'none';
+      pendingSubmission = null;
+
+      updateSummary();
+    }
+
+    function showError(error) {
+      const text = error && error.message ? error.message : String(error);
+      document.getElementById('errorModalText').textContent = text;
+      document.getElementById('errorModal').style.display = 'flex';
+    }
+
+    function closeErrorModal() {
+      document.getElementById('errorModal').style.display = 'none';
+    }
+
+    function clearErrorModal() {
+      document.getElementById('errorModalText').textContent = '';
+      document.getElementById('errorModal').style.display = 'none';
+    }
+
+    function showSuccess(result) {
+      const text =
+        'The transaction was saved successfully.\n\n' +
+        'Saved to: ' + result.sheetName + '\n' +
+        'Final Total: ' + formatMoney(result.total) + '\n' +
+        'Patient: ' + (result.patientName || '');
+
+      document.getElementById('successModalText').textContent = text;
+      document.getElementById('successModal').style.display = 'flex';
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').style.display = 'none';
+    }
+
+    function newTransactionFromSuccess() {
+      document.getElementById('successModal').style.display = 'none';
+      document.getElementById('patientName').focus();
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    document.getElementById('service').addEventListener('change', populateOptions);
+    document.getElementById('option').addEventListener('change', updateSummary);
+    document.getElementById('units').addEventListener('input', updateSummary);
+
+    document.getElementById('discountType').addEventListener('change', resetDiscountFieldForType);
+    document.getElementById('discountValueDisplay').addEventListener('blur', formatDiscountField);
+
+    document.getElementById('tipDisplay').addEventListener('blur', function() {
+      formatCurrencyField('tipDisplay', 'tip');
+    });
+
+    document.getElementById('payCreditCardDisplay').addEventListener('blur', function() {
+      formatCurrencyField('payCreditCardDisplay', 'payCreditCard');
+    });
+    document.getElementById('payCashCheckDisplay').addEventListener('blur', function() {
+      formatCurrencyField('payCashCheckDisplay', 'payCashCheck');
+    });
+    document.getElementById('payVenmoDisplay').addEventListener('blur', function() {
+      formatCurrencyField('payVenmoDisplay', 'payVenmo');
+    });
+    document.getElementById('payZelleDisplay').addEventListener('blur', function() {
+      formatCurrencyField('payZelleDisplay', 'payZelle');
+    });
+    document.getElementById('creditCardFeeDisplay').addEventListener('blur', function() {
+      formatCurrencyField('creditCardFeeDisplay', 'creditCardFee');
+    });
+
+    prepareCurrencyFieldForEntry('tipDisplay');
+    prepareCurrencyFieldForEntry('payCreditCardDisplay');
+    prepareCurrencyFieldForEntry('payCashCheckDisplay');
+    prepareCurrencyFieldForEntry('payVenmoDisplay');
+    prepareCurrencyFieldForEntry('payZelleDisplay');
+    prepareCurrencyFieldForEntry('creditCardFeeDisplay');
+
+    loadAppData();
+    resetDiscountFieldForType();
+  </script>
+</body>
+</html>
