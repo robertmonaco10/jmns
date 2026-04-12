@@ -767,34 +767,37 @@
     }
 
     async function confirmSave() {
-      if (!pendingSubmission) return;
+  if (!pendingSubmission) return;
 
-      const savedPatientName = pendingSubmission.patientName || '';
+  const savedPatientName = pendingSubmission.patientName || '';
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(pendingSubmission)
-        });
+  try {
+    const formData = new URLSearchParams();
+    formData.append('payload', JSON.stringify(pendingSubmission));
 
-        const result = await res.json();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: formData
+    });
 
-        if (!result.success) {
-          throw new Error(result.error || 'Could not save transaction.');
-        }
+    const text = await res.text();
+    const result = JSON.parse(text);
 
-        document.getElementById('confirmModal').style.display = 'none';
-        resetForm();
-        result.patientName = savedPatientName;
-        showSuccess(result);
-        pendingSubmission = null;
-      } catch (err) {
-        document.getElementById('confirmModal').style.display = 'none';
-        pendingSubmission = null;
-        showError(err);
-      }
+    if (!result.success) {
+      throw new Error(result.error || 'Could not save transaction.');
     }
+
+    document.getElementById('confirmModal').style.display = 'none';
+    resetForm();
+    result.patientName = savedPatientName;
+    showSuccess(result);
+    pendingSubmission = null;
+  } catch (err) {
+    document.getElementById('confirmModal').style.display = 'none';
+    pendingSubmission = null;
+    showError(err);
+  }
+}
 
     function resetForm() {
       document.getElementById('patientName').value = '';
