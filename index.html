@@ -925,7 +925,38 @@
     document.getElementById('creditCardFeeDisplay').addEventListener('blur', function() {
       formatCurrencyField('creditCardFeeDisplay', 'creditCardFee');
     });
+    const discountDisplay = document.getElementById('discountValueDisplay');
 
+discountDisplay.addEventListener('focus', function() {
+  const type = document.getElementById('discountType').value;
+
+  if (type === 'none') return;
+
+  if (discountDisplay.value === '--' || discountDisplay.value === '$0.00' || discountDisplay.value === '0.00%') {
+    discountDisplay.value = '';
+  } else {
+    discountDisplay.select();
+  }
+});
+
+discountDisplay.addEventListener('blur', function() {
+  const type = document.getElementById('discountType').value;
+
+  if (type === 'none') {
+    discountDisplay.value = '--';
+    return;
+  }
+
+  if (discountDisplay.value.trim() === '') {
+    if (type === 'percent') {
+      discountDisplay.value = '0.00%';
+    } else {
+      discountDisplay.value = '$0.00';
+    }
+  }
+
+  formatDiscountField();
+});
     prepareCurrencyFieldForEntry('tipDisplay');
     prepareCurrencyFieldForEntry('payCreditCardDisplay');
     prepareCurrencyFieldForEntry('payCashCheckDisplay');
