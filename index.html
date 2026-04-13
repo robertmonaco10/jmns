@@ -925,6 +925,13 @@
     document.getElementById('creditCardFeeDisplay').addEventListener('blur', function() {
       formatCurrencyField('creditCardFeeDisplay', 'creditCardFee');
     });
+    
+    prepareCurrencyFieldForEntry('tipDisplay');
+    prepareCurrencyFieldForEntry('payCreditCardDisplay');
+    prepareCurrencyFieldForEntry('payCashCheckDisplay');
+    prepareCurrencyFieldForEntry('payVenmoDisplay');
+    prepareCurrencyFieldForEntry('payZelleDisplay');
+    prepareCurrencyFieldForEntry('creditCardFeeDisplay');
     const discountDisplay = document.getElementById('discountValueDisplay');
 
 discountDisplay.addEventListener('focus', function() {
@@ -957,13 +964,6 @@ discountDisplay.addEventListener('blur', function() {
 
   formatDiscountField();
 });
-    prepareCurrencyFieldForEntry('tipDisplay');
-    prepareCurrencyFieldForEntry('payCreditCardDisplay');
-    prepareCurrencyFieldForEntry('payCashCheckDisplay');
-    prepareCurrencyFieldForEntry('payVenmoDisplay');
-    prepareCurrencyFieldForEntry('payZelleDisplay');
-    prepareCurrencyFieldForEntry('creditCardFeeDisplay');
-
     loadAppData();
     resetDiscountFieldForType();
   </script>
